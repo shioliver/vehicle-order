@@ -1,0 +1,382 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>六块田地 ECharts 示例</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+      :root {
+        --ink: #132018;
+        --muted: #64705e;
+        --line: rgba(255, 255, 255, 0.42);
+        --panel: rgba(255, 255, 255, 0.82);
+        --green: #16a34a;
+        --yellow: #d97706;
+        --red: #dc2626;
+        --blue: #0284c7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--ink);
+        font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+        background: #eaf2df;
+      }
+
+      .demo-page {
+        min-height: 100vh;
+        padding: 28px;
+        background:
+          linear-gradient(180deg, rgba(241, 248, 234, 0.8), rgba(225, 239, 217, 0.88)),
+          url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=80") center / cover fixed;
+      }
+
+      .demo-shell {
+        width: min(1180px, 100%);
+        margin: 0 auto;
+      }
+
+      .hero {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 18px;
+      }
+
+      .hero h1 {
+        margin: 0;
+        font-size: clamp(30px, 5vw, 54px);
+        line-height: 1.05;
+        letter-spacing: 0;
+      }
+
+      .hero p {
+        margin: 10px 0 0;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+        min-width: 360px;
+      }
+
+      .summary-card {
+        min-height: 74px;
+        padding: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+        border-radius: 8px;
+        background: var(--panel);
+        backdrop-filter: blur(14px);
+        box-shadow: 0 16px 40px rgba(23, 46, 21, 0.12);
+      }
+
+      .summary-card span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .summary-card strong {
+        display: block;
+        margin-top: 8px;
+        font-size: 24px;
+      }
+
+      .map-card {
+        position: relative;
+        overflow: hidden;
+        min-height: 620px;
+        border: 1px solid rgba(255, 255, 255, 0.55);
+        border-radius: 10px;
+        background:
+          linear-gradient(90deg, rgba(7, 29, 16, 0.18), rgba(255, 255, 255, 0.05)),
+          url("https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1800&q=80") center / cover;
+        box-shadow: 0 30px 90px rgba(23, 46, 21, 0.24);
+      }
+
+      .map-card::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.22), transparent 28%),
+          linear-gradient(180deg, rgba(8, 26, 14, 0.1), rgba(8, 26, 14, 0.46));
+        pointer-events: none;
+      }
+
+      #fieldChart {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .detail-panel {
+        position: absolute;
+        right: 18px;
+        bottom: 18px;
+        width: min(360px, calc(100% - 36px));
+        padding: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.58);
+        border-radius: 10px;
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 18px 46px rgba(15, 23, 42, 0.18);
+      }
+
+      .detail-panel h2 {
+        margin: 0 0 6px;
+        font-size: 22px;
+      }
+
+      .detail-panel p {
+        margin: 0 0 12px;
+        color: var(--muted);
+        font-weight: 700;
+      }
+
+      .detail-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+
+      .detail-grid div {
+        padding: 10px;
+        border-radius: 8px;
+        background: rgba(241, 248, 234, 0.82);
+      }
+
+      .detail-grid span {
+        display: block;
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      .detail-grid strong {
+        display: block;
+        margin-top: 5px;
+      }
+
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.76);
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 900;
+      }
+
+      .legend i {
+        width: 8px;
+        height: 8px;
+        border-radius: 999px;
+      }
+
+      @media (max-width: 760px) {
+        .demo-page {
+          padding: 14px;
+        }
+
+        .hero {
+          display: block;
+        }
+
+        .summary {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          min-width: 0;
+          margin-top: 14px;
+        }
+
+        .map-card {
+          min-height: 640px;
+        }
+
+        .detail-panel {
+          left: 12px;
+          right: 12px;
+          bottom: 12px;
+          width: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="demo-page">
+      <section class="demo-shell">
+        <header class="hero">
+          <div>
+            <h1>智慧农田看板</h1>
+            <p>真实农田底图叠加 6 块地块状态，支持悬浮、点击和移动端查看。</p>
+          </div>
+          <div class="summary">
+            <div class="summary-card"><span>田块总数</span><strong>6</strong></div>
+            <div class="summary-card"><span>正常</span><strong>3</strong></div>
+            <div class="summary-card"><span>作业中</span><strong>2</strong></div>
+            <div class="summary-card"><span>异常</span><strong>1</strong></div>
+          </div>
+        </header>
+
+        <section class="map-card">
+          <div id="fieldChart" aria-label="六块田地状态图"></div>
+          <aside class="detail-panel" id="detailPanel">
+            <h2>一号田</h2>
+            <p>水稻 · 生长期 · 正常</p>
+            <div class="detail-grid">
+              <div><span>面积</span><strong>26.4 亩</strong></div>
+              <div><span>负责人</span><strong>张师傅</strong></div>
+              <div><span>土壤湿度</span><strong>68%</strong></div>
+              <div><span>今日任务</span><strong>巡田记录</strong></div>
+            </div>
+            <div class="legend">
+              <span><i style="background: var(--green)"></i>正常</span>
+              <span><i style="background: var(--blue)"></i>灌溉中</span>
+              <span><i style="background: var(--yellow)"></i>待处理</span>
+              <span><i style="background: var(--red)"></i>异常</span>
+            </div>
+          </aside>
+        </section>
+      </section>
+    </main>
+
+    <script>
+      const fields = [
+        { name: "一号田", crop: "水稻", status: "正常", color: "#16a34a", area: "26.4 亩", owner: "张师傅", moisture: "68%", task: "巡田记录", points: [[10, 12], [40, 8], [43, 34], [8, 38]] },
+        { name: "二号田", crop: "玉米", status: "灌溉中", color: "#0284c7", area: "18.7 亩", owner: "李师傅", moisture: "74%", task: "滴灌 2 小时", points: [[45, 9], [74, 13], [70, 39], [43, 34]] },
+        { name: "三号田", crop: "油菜", status: "待处理", color: "#d97706", area: "22.1 亩", owner: "王师傅", moisture: "49%", task: "补肥提醒", points: [[75, 14], [93, 20], [91, 48], [70, 39]] },
+        { name: "四号田", crop: "小麦", status: "正常", color: "#16a34a", area: "31.2 亩", owner: "周师傅", moisture: "61%", task: "无人机巡检", points: [[8, 40], [43, 35], [45, 66], [12, 70]] },
+        { name: "五号田", crop: "蔬菜", status: "异常", color: "#dc2626", area: "12.8 亩", owner: "陈师傅", moisture: "32%", task: "病虫害复核", points: [[45, 37], [70, 41], [68, 72], [46, 66]] },
+        { name: "六号田", crop: "水稻", status: "正常", color: "#16a34a", area: "27.5 亩", owner: "赵师傅", moisture: "66%", task: "待采样", points: [[71, 42], [92, 50], [88, 78], [69, 73]] }
+      ];
+
+      const panel = document.getElementById("detailPanel");
+      const chart = echarts.init(document.getElementById("fieldChart"));
+
+      function polygonCenter(points) {
+        const sum = points.reduce((acc, point) => [acc[0] + point[0], acc[1] + point[1]], [0, 0]);
+        return [sum[0] / points.length, sum[1] / points.length];
+      }
+
+      function renderItem(params, api) {
+        const field = fields[params.dataIndex];
+        const points = field.points.map((point) => api.coord(point));
+        const center = api.coord(polygonCenter(field.points));
+        const selected = chart.getOption().series?.[0]?.data?.[params.dataIndex]?.selected;
+        return {
+          type: "group",
+          children: [
+            {
+              type: "polygon",
+              shape: { points },
+              style: {
+                fill: field.color + (selected ? "88" : "55"),
+                stroke: selected ? "#ffffff" : field.color,
+                lineWidth: selected ? 4 : 2,
+                shadowBlur: selected ? 18 : 10,
+                shadowColor: field.color + "88"
+              },
+              emphasis: {
+                style: {
+                  fill: field.color + "99",
+                  lineWidth: 4,
+                  shadowBlur: 22
+                }
+              }
+            },
+            {
+              type: "text",
+              style: {
+                x: center[0],
+                y: center[1] - 8,
+                text: field.name,
+                fill: "#ffffff",
+                fontSize: 18,
+                fontWeight: 900,
+                textAlign: "center",
+                textShadowBlur: 8,
+                textShadowColor: "rgba(0,0,0,.55)"
+              }
+            },
+            {
+              type: "text",
+              style: {
+                x: center[0],
+                y: center[1] + 17,
+                text: field.status,
+                fill: "#ffffff",
+                fontSize: 12,
+                fontWeight: 800,
+                textAlign: "center",
+                textShadowBlur: 8,
+                textShadowColor: "rgba(0,0,0,.55)"
+              }
+            }
+          ]
+        };
+      }
+
+      function updatePanel(field) {
+        panel.querySelector("h2").textContent = field.name;
+        panel.querySelector("p").textContent = `${field.crop} · ${field.status}`;
+        const values = panel.querySelectorAll(".detail-grid strong");
+        values[0].textContent = field.area;
+        values[1].textContent = field.owner;
+        values[2].textContent = field.moisture;
+        values[3].textContent = field.task;
+      }
+
+      function draw(selectedIndex = 0) {
+        chart.setOption({
+          backgroundColor: "transparent",
+          tooltip: {
+            trigger: "item",
+            borderWidth: 0,
+            backgroundColor: "rgba(255,255,255,.94)",
+            textStyle: { color: "#132018", fontWeight: 700 },
+            formatter: (params) => {
+              const field = fields[params.dataIndex];
+              return `${field.name}<br/>作物：${field.crop}<br/>状态：${field.status}<br/>面积：${field.area}<br/>今日任务：${field.task}`;
+            }
+          },
+          xAxis: { min: 0, max: 100, show: false },
+          yAxis: { min: 0, max: 100, inverse: true, show: false },
+          series: [
+            {
+              type: "custom",
+              coordinateSystem: "cartesian2d",
+              renderItem,
+              data: fields.map((field, index) => ({ value: polygonCenter(field.points), selected: index === selectedIndex }))
+            }
+          ]
+        });
+        updatePanel(fields[selectedIndex]);
+      }
+
+      chart.on("click", (params) => draw(params.dataIndex));
+      draw(0);
+      window.addEventListener("resize", () => chart.resize());
+    </script>
+  </body>
+</html>

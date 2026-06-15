@@ -1,0 +1,308 @@
+import type { FleetData } from '@/types/domain';
+import { formatBeijingDateTime } from '@/utils/date';
+
+const now = formatBeijingDateTime();
+
+export const seedData: FleetData = {
+  users: [
+    { id: 'u-super', username: 'admin', password: '123456', name: '超级管理员', role: 'super_admin', phone: '13800000001', status: '启用' },
+    { id: 'u-inspection-admin', username: 'inspector', password: '123456', name: '检测管理员', role: 'inspection_admin', phone: '13800000011', status: '启用' },
+    { id: 'u-rental-admin', username: 'rentaladmin', password: '123456', name: '租赁调度管理员', role: 'rental_admin', phone: '13800000012', status: '启用' },
+    { id: 'u-user', username: 'user', password: '123456', name: '租车客户', role: 'customer', phone: '13800000002', status: '启用' },
+    { id: 'u-driver', username: 'driver', password: '123456', name: '网约车司机', role: 'driver', phone: '13800000003', status: '启用' }
+  ],
+  vehicles: [
+    {
+      id: 'v-001',
+      plateNo: '渝A12354',
+      vin: 'LGBH52E05RY123454',
+      brandModel: '传祺M8 大师版',
+      energyType: '燃油',
+      color: '星夜黑',
+      produceDate: '2023-05-10',
+      registerDate: '2023-07-18',
+      mileage: 28600,
+      status: '调度中',
+      grade: 'A',
+      warehouse: '重庆北站网约车库',
+      parkingSpace: 'A-018',
+      dailyPrice: 368,
+      deposit: 5000,
+      driverId: 'd-001',
+      lastInspectionId: 'r-001',
+      updatedAt: now
+    },
+    {
+      id: 'v-002',
+      plateNo: '渝B8K216',
+      vin: 'LSVAM60T7P2188123',
+      brandModel: '比亚迪秦 PLUS EV',
+      energyType: '纯电',
+      color: '雪域白',
+      produceDate: '2024-01-12',
+      registerDate: '2024-03-01',
+      mileage: 13200,
+      status: '可租赁',
+      grade: 'S',
+      warehouse: '江北机场车辆中心',
+      parkingSpace: 'B-066',
+      dailyPrice: 288,
+      deposit: 3000,
+      city: '重庆',
+      pickupLocation: '江北机场车辆中心 B-066',
+      description: '纯电代步车，车况轻便，适合市区短租。',
+      minRentalDays: 1,
+      images: [],
+      reportFiles: [],
+      updatedAt: now
+    },
+    {
+      id: 'v-003',
+      plateNo: '渝D92Q18',
+      vin: 'LFPH4ACC8N1D92188',
+      brandModel: '丰田卡罗拉 双擎',
+      energyType: '混动',
+      color: '银灰',
+      produceDate: '2022-11-03',
+      registerDate: '2023-01-05',
+      mileage: 42500,
+      status: '待检测',
+      updatedAt: now
+    },
+    {
+      id: 'v-004',
+      plateNo: '渝C7M508',
+      vin: 'LGBH52E07RYTEST04',
+      brandModel: '大众朗逸 1.5L',
+      energyType: '燃油',
+      color: '极地白',
+      produceDate: '2021-08-16',
+      registerDate: '2021-10-12',
+      mileage: 56300,
+      status: '可租赁',
+      ownerId: 'u-user',
+      dailyPrice: 198,
+      deposit: 2000,
+      city: '重庆',
+      pickupLocation: '渝北区汽博中心',
+      description: '个人车源，日常通勤使用，支持线下看车后租赁。',
+      minRentalDays: 2,
+      images: [],
+      reportFiles: [
+        {
+          id: 'att-demo-report',
+          name: '车辆检测报告示例.html',
+          type: 'other',
+          url: 'data:text/html;charset=utf-8,%E8%BD%A6%E8%BE%86%E6%A3%80%E6%B5%8B%E6%8A%A5%E5%91%8A%E7%A4%BA%E4%BE%8B',
+          uploadedAt: now
+        }
+      ],
+      updatedAt: now
+    },
+    {
+      id: 'v-005',
+      plateNo: '渝F6P219',
+      vin: 'LSGUL83L9NAFLOW05',
+      brandModel: '别克GL8 商旅版',
+      energyType: '燃油',
+      color: '琥珀金',
+      produceDate: '2022-04-18',
+      registerDate: '2022-06-20',
+      mileage: 39800,
+      status: '已检测',
+      grade: 'B',
+      dailyPrice: 328,
+      deposit: 5000,
+      updatedAt: now
+    },
+    {
+      id: 'v-006',
+      plateNo: '渝G3T816',
+      vin: 'LFPH4ACC8NREADY06',
+      brandModel: '日产轩逸 e-POWER',
+      energyType: '混动',
+      color: '曜石黑',
+      produceDate: '2023-09-09',
+      registerDate: '2023-11-02',
+      mileage: 21800,
+      status: '预备库',
+      grade: 'A',
+      warehouse: '重庆西站网约车库',
+      parkingSpace: 'C-021',
+      dailyPrice: 238,
+      deposit: 2500,
+      updatedAt: now
+    },
+    {
+      id: 'v-007',
+      plateNo: '渝H5K732',
+      vin: 'LSVAM60T7PRENTAL7',
+      brandModel: '埃安 Y Plus',
+      energyType: '纯电',
+      color: '冰川蓝',
+      produceDate: '2024-02-21',
+      registerDate: '2024-04-05',
+      mileage: 8600,
+      status: '可租赁',
+      grade: 'S',
+      warehouse: '江北机场车辆中心',
+      parkingSpace: 'B-088',
+      dailyPrice: 268,
+      deposit: 3000,
+      city: '重庆',
+      pickupLocation: '江北机场车辆中心 B-088',
+      description: '新能源车源，空间充足，适合家庭出行。',
+      minRentalDays: 1,
+      images: [],
+      reportFiles: [],
+      updatedAt: now
+    },
+    {
+      id: 'v-008',
+      plateNo: '渝J9Q614',
+      vin: 'LFPH4ACC8NRENTED8',
+      brandModel: '丰田雷凌 双擎',
+      energyType: '混动',
+      color: '钛银',
+      produceDate: '2023-03-11',
+      registerDate: '2023-05-19',
+      mileage: 30100,
+      status: '已出租',
+      grade: 'A',
+      warehouse: '重庆北站网约车库',
+      parkingSpace: 'A-033',
+      dailyPrice: 258,
+      deposit: 2800,
+      updatedAt: now
+    }
+  ],
+  reports: [
+    {
+      id: 'r-001',
+      reportNo: 'RPT202605131626',
+      vehicleId: 'v-001',
+      clientName: '李四',
+      clientPhone: '13800000002',
+      purpose: '入库检测',
+      inspectorName: '张三',
+      inspectorNo: 'PG001',
+      location: '重庆市渝北区车辆智能检测中心',
+      checkedAt: '2026-05-13 16:26',
+      grade: 'A',
+      abnormalSummary: '外观轻微划痕，内饰正常，底盘无明显异常。',
+      suggestion: '建议补漆抛光后进入网约车预备库。',
+      floodVerdict: '正常',
+      fireVerdict: '正常',
+      crashVerdict: '正常',
+      items: [
+        { category: '外观检测', item: '左前翼子板', result: '异常', remark: '轻微划痕' },
+        { category: '机舱检测', item: '管路', result: '正常', remark: '无' },
+        { category: '内饰检测', item: '主驾驶座椅磨损', result: '正常', remark: '无' },
+        { category: '底盘检测', item: '前副车架及悬架摆臂', result: '正常', remark: '无' }
+      ],
+      createdAt: now
+    }
+  ],
+  inventoryRecords: [
+    {
+      id: 'i-001',
+      recordNo: 'IR20260513001',
+      vehicleId: 'v-001',
+      type: '入库',
+      source: '检测入库',
+      warehouse: '重庆北站网约车库',
+      parkingSpace: 'A-018',
+      operator: '系统管理员',
+      mileage: 28600,
+      energyLevel: 82,
+      remark: '检测通过后自动进入预备库。',
+      createdAt: now
+    },
+    {
+      id: 'i-002',
+      recordNo: 'IR20260513002',
+      vehicleId: 'v-006',
+      type: '入库',
+      source: '手动入库',
+      warehouse: '重庆西站网约车库',
+      parkingSpace: 'C-021',
+      operator: '系统管理员',
+      mileage: 21800,
+      energyLevel: 76,
+      remark: '手动入库测试车辆，可用于创建调度任务。',
+      createdAt: now
+    },
+    {
+      id: 'i-003',
+      recordNo: 'IR20260513003',
+      vehicleId: 'v-008',
+      type: '出库',
+      source: '租赁出库',
+      warehouse: '重庆北站网约车库',
+      parkingSpace: 'A-033',
+      operator: '系统管理员',
+      mileage: 30100,
+      energyLevel: 68,
+      remark: '租赁出库测试流水，可用于用户端申请还车。',
+      createdAt: now
+    }
+  ],
+  rentalOrders: [
+    {
+      id: 'o-001',
+      orderNo: 'RO20260513001',
+      vehicleId: 'v-002',
+      userId: 'u-user',
+      customerName: '租车客户',
+      startAt: '2026-05-14 09:00',
+      endAt: '2026-05-17 18:00',
+      amount: 864,
+      deposit: 3000,
+      status: '待审核'
+    },
+    {
+      id: 'o-002',
+      orderNo: 'RO20260513002',
+      vehicleId: 'v-008',
+      userId: 'u-user',
+      customerName: '租车客户',
+      startAt: '2026-05-14 10:30',
+      endAt: '2026-05-16 18:00',
+      amount: 516,
+      deposit: 2800,
+      status: '租赁中'
+    }
+  ],
+  drivers: [
+    { id: 'd-001', userId: 'u-driver', name: '周师傅', phone: '13900000001', licenseNo: '500112198801012345', status: '出车中' },
+    { id: 'd-002', name: '王师傅', phone: '13900000002', licenseNo: '500112199002022345', status: '出车中' },
+    { id: 'd-003', name: '陈师傅', phone: '13900000003', licenseNo: '500112199503033345', status: '空闲' },
+    { id: 'd-004', name: '刘师傅', phone: '13900000004', licenseNo: '500112199604044445', status: '空闲' }
+  ],
+  dispatchTasks: [
+    {
+      id: 't-001',
+      taskNo: 'DT20260513001',
+      vehicleId: 'v-001',
+      driverId: 'd-001',
+      routeName: '北站早高峰保障',
+      startPoint: '重庆北站南广场',
+      endPoint: '观音桥商圈',
+      scheduledAt: '2026-05-14 07:00',
+      status: '待接收',
+      remark: '从预备库派车，出车前确认油量和随车物品。'
+    },
+    {
+      id: 't-002',
+      taskNo: 'DT20260513002',
+      vehicleId: 'v-002',
+      driverId: 'd-002',
+      routeName: '机场晚高峰接驳',
+      startPoint: '江北机场T3',
+      endPoint: '解放碑商圈',
+      scheduledAt: '2026-05-14 18:30',
+      status: '执行中',
+      remark: '司机端可测试完成任务，完成后车辆释放回可租赁。'
+    }
+  ]
+};
