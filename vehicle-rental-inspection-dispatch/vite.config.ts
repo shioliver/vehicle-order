@@ -26,6 +26,11 @@ export default defineConfig(({ mode }) => {
           }
         }
       }
+    },
+    build: {
+      rollupOptions: {
+        external: ['@/aws-exports']
+      }
     }
   };
 });

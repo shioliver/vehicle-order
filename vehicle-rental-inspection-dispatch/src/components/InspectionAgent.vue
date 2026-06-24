@@ -47,6 +47,26 @@ const messages = ref<ChatMessage[]>([]);
 const messageListRef = ref<HTMLElement | null>(null);
 let abortController: AbortController | null = null;
 
+function onApplyFocus(text: string) {
+  focusText.value = text;
+}
+function onApplyRemark(payload: { itemName: string; remark: string }) {
+  ElMessage.info(`Agent 建议备注：${payload.remark.slice(0, 30)}...`);
+}
+function onApplySummary(payload: { abnormalSummary: string; suggestion: string }) {
+  emit('apply-summary', payload);
+}
+function onApplyJudgement(payload: { grade: string; riskTags: string[]; reason: string }) {
+  emit('apply-judgement', {
+    grade: payload.grade as JudgementResult['grade'],
+    riskTags: payload.riskTags as JudgementResult['riskTags'],
+    floodVerdict: '无' as JudgementResult['floodVerdict'],
+    fireVerdict: '无' as JudgementResult['fireVerdict'],
+    crashVerdict: '无' as JudgementResult['crashVerdict'],
+    reasoning: payload.reason
+  });
+}
+
 // ============ 本地配置（双击标题进入） ============
 const configVisible = ref(false);
 const configForm = reactive<AgentConfig>(loadAgentConfig());

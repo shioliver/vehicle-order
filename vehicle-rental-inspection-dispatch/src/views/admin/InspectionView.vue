@@ -1,17 +1,21 @@
 <script setup lang="ts">
 import { computed, nextTick, reactive, ref, watch } from 'vue';
 import { ElMessage } from 'element-plus';
+import { Picture, MagicStick } from '@element-plus/icons-vue';
 import PageHeader from '@/components/PageHeader.vue';
 import ReportPreview from '@/components/ReportPreview.vue';
 import InspectionAgent from '@/components/InspectionAgent.vue';
+import RemarkImageUpload from '@/components/RemarkImageUpload.vue';
+import ImagePreview from '@/components/ImagePreview.vue';
 import { suggestRemark } from '@/services/inspectionAgent';
+import { deleteImage } from '@/services/imageStorage';
 import { inspectionCategories } from '@/db/schema';
 import { useFleetStore } from '@/stores/fleet';
 import { useAuthStore } from '@/stores/auth';
 import { can } from '@/auth/permissions';
 import { formatBeijingDateTime } from '@/utils/date';
 import { getErrorMessage } from '@/utils/errors';
-import type { InspectionGrade, InspectionItemResult, InspectionReport, Vehicle } from '@/types/domain';
+import type { InspectionGrade, InspectionImage, InspectionItemResult, InspectionReport, Vehicle } from '@/types/domain';
 
 const fleet = useFleetStore();
 const auth = useAuthStore();
@@ -220,6 +224,63 @@ const remarkLoading = reactive<Record<string, boolean>>({});
 function remarkKey(item: { category: string; item: string }) {
   return `${item.category}::${item.item}`;
 }
+
+// 图片上传状态
+const imageUploadItem = ref<InspectionItemResult | null>(null);
+const imageUploadVisible = ref(false);
+const previewImages = ref<InspectionImage[]>([]);
+const previewIndex = ref(0);
+const previewVisible = ref(false);
+
+function openImageUpload(item: InspectionItemResult) {
+  imageUploadItem.value = item;
+  imageUploadVisible.value = true;
+}
+
+function onImagesAdd(images: InspectionImage[]) {
+  if (!imageUploadItem.value) return;
+  if (!imageUploadItem.value.images) imageUploadItem.value.images = [];
+  imageUploadItem.value.images.push(...images);
+}
+
+async function onImagesRemove(imageId: string) {
+  try {
+    await deleteImage(imageId);
+  } catch {
+    // S3 删除失败不阻断 UI
+  }
+  if (!imageUploadItem.value?.images) return;
+  const idx = imageUploadItem.value.images.findIndex((img) => img.id === imageId);
+  if (idx >= 0) imageUploadItem.value.images.splice(idx, 1);
+}
+
+function onImagesReplace(imageId: string, newDataUrl: string) {
+  if (!imageUploadItem.value?.images) return;
+  const img = imageUploadItem.value.images.find((i) => i.id === imageId);
+  if (img) {
+    img.dataUrl = newDataUrl;
+  }
+}
+
+function openImagePreview(item: InspectionItemResult, index: number) {
+  previewImages.value = item.images || [];
+  previewIndex.value = index;
+  previewVisible.value = true;
+}
+
+async function onPreviewDelete(imageId: string) {
+  try {
+    await deleteImage(imageId);
+  } catch {
+    // S3 删除失败不阻断 UI
+  }
+  if (!imageUploadItem.value?.images) return;
+  const idx = imageUploadItem.value.images.findIndex((img) => img.id === imageId);
+  if (idx >= 0) imageUploadItem.value.images.splice(idx, 1);
+  previewImages.value = imageUploadItem.value.images;
+  if (previewImages.value.length === 0) previewVisible.value = false;
+}
+
 async function aiCompleteRemark(row: { category: string; item: string; remark: string }) {
   const key = remarkKey(row);
   if (remarkLoading[key]) return;
@@ -376,6 +437,26 @@ async function submit() {
                 >
                   <el-icon><MagicStick /></el-icon>
                 </el-button>
+                <el-button
+                  size="small"
+                  text
+                  @click="openImageUpload(row)"
+                  class="remark-img-btn"
+                >
+                  <el-icon><Picture /></el-icon>
+                  {{ row.images?.length || 0 }}/3
+                </el-button>
+              </div>
+              <div v-if="row.images?.length" class="remark-thumbs">
+                <div
+                  v-for="(img, idx) in row.images"
+                  :key="img.id"
+                  class="remark-thumb"
+                  @click="openImagePreview(row, idx)"
+                >
+                  <img :src="img.dataUrl" :alt="img.name" />
+                  <span class="thumb-remove" @click.stop="onImagesRemove(img.id)">×</span>
+                </div>
               </div>
             </template>
           </el-table-column>
@@ -404,6 +485,26 @@ async function submit() {
               >
                 <el-icon><MagicStick /></el-icon>
               </el-button>
+              <el-button
+                size="small"
+                text
+                @click="openImageUpload(item)"
+                class="remark-img-btn"
+              >
+                <el-icon><Picture /></el-icon>
+                {{ item.images?.length || 0 }}/3
+              </el-button>
+            </div>
+            <div v-if="item.images?.length" class="remark-thumbs">
+              <div
+                v-for="(img, idx) in item.images"
+                :key="img.id"
+                class="remark-thumb"
+                @click="openImagePreview(item, idx)"
+              >
+                <img :src="img.dataUrl" :alt="img.name" />
+                <span class="thumb-remove" @click.stop="onImagesRemove(img.id)">×</span>
+              </div>
             </div>
           </div>
         </article>
@@ -427,6 +528,25 @@ async function submit() {
     @apply-judgement="applyAgentJudgement"
     @focus-item="focusOnItem"
   />
+
+  <RemarkImageUpload
+    v-if="imageUploadItem"
+    v-model="imageUploadVisible"
+    :existing-images="imageUploadItem.images || []"
+    :max-images="3"
+    :plate-no="form.plateNo"
+    @add="onImagesAdd"
+    @remove="onImagesRemove"
+    @replace="onImagesReplace"
+  />
+
+  <ImagePreview
+    v-if="previewVisible"
+    :images="previewImages"
+    :initial-index="previewIndex"
+    @close="previewVisible = false"
+    @delete="onPreviewDelete"
+  />
 </template>
 
 <style scoped>
@@ -437,5 +557,53 @@ async function submit() {
 }
 .remark-cell .el-input {
   flex: 1;
+}
+.remark-img-btn {
+  white-space: nowrap;
+  font-size: 12px;
+  color: #409eff;
+}
+.remark-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.remark-thumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px solid #dcdfe6;
+  flex-shrink: 0;
+}
+.remark-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.remark-thumb:hover {
+  border-color: #409eff;
+}
+.thumb-remove {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: rgba(245, 108, 108, 0.9);
+  color: white;
+  font-size: 12px;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 0 4px 0 4px;
+  line-height: 1;
+}
+.thumb-remove:hover {
+  background: #f56c6c;
 }
 </style>

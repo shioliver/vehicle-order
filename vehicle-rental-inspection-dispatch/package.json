@@ -12,10 +12,14 @@
     "cap:open:android": "cap open android"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1075.0",
+    "@aws-sdk/credential-providers": "^3.1075.0",
+    "@aws-sdk/lib-storage": "^3.1075.0",
+    "@aws-sdk/s3-request-presigner": "^3.1075.0",
+    "@capacitor-community/sqlite": "^7.0.0",
     "@capacitor/android": "^7.2.0",
     "@capacitor/cli": "^7.2.0",
     "@capacitor/core": "^7.2.0",
-    "@capacitor-community/sqlite": "^7.0.0",
     "@element-plus/icons-vue": "^2.3.1",
     "element-plus": "^2.9.8",
     "pinia": "^3.0.2",

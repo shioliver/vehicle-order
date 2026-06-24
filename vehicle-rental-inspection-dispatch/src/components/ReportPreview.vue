@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import GradeTag from '@/components/GradeTag.vue';
-import type { InspectionItemResult, InspectionReport, Vehicle } from '@/types/domain';
+import ImagePreview from '@/components/ImagePreview.vue';
+import type { InspectionImage, InspectionItemResult, InspectionReport, Vehicle } from '@/types/domain';
 
 const props = withDefaults(
   defineProps<{
@@ -17,6 +18,16 @@ const props = withDefaults(
     hideCustomerInfo: false
   }
 );
+
+const previewImages = ref<InspectionImage[]>([]);
+const previewIndex = ref(0);
+const previewVisible = ref(false);
+
+function openImagePreview(item: InspectionItemResult, index: number) {
+  previewImages.value = item.images || [];
+  previewIndex.value = index;
+  previewVisible.value = true;
+}
 
 const grouped = computed(() => {
   const map = new Map<string, typeof props.report.items>();
@@ -133,7 +144,23 @@ function reportRowClassName({ row }: { row: InspectionItemResult }) {
         >
           <el-table-column prop="item" label="检测项目" min-width="160" />
           <el-table-column prop="result" label="检测结果" width="110" />
-          <el-table-column prop="remark" label="备注" min-width="160" />
+          <el-table-column label="备注" min-width="200">
+            <template #default="{ row }">
+              <div class="report-remark-cell">
+                <span>{{ row.remark || '无' }}</span>
+                <div v-if="row.images?.length" class="report-remark-thumbs">
+                  <img
+                    v-for="(img, idx) in row.images"
+                    :key="img.id"
+                    :src="img.dataUrl"
+                    :alt="img.name"
+                    class="report-thumb"
+                    @click="openImagePreview(row, idx)"
+                  />
+                </div>
+              </div>
+            </template>
+          </el-table-column>
         </el-table>
       </template>
       <div class="report-mobile-list">
@@ -149,6 +176,16 @@ function reportRowClassName({ row }: { row: InspectionItemResult }) {
           <div>
             <span>备注</span>
             <strong>{{ item.remark || '无' }}</strong>
+            <div v-if="item.images?.length" class="report-remark-thumbs">
+              <img
+                v-for="(img, idx) in item.images"
+                :key="img.id"
+                :src="img.dataUrl"
+                :alt="img.name"
+                class="report-thumb"
+                @click="openImagePreview(item, idx)"
+              />
+            </div>
           </div>
         </article>
       </div>
@@ -167,5 +204,37 @@ function reportRowClassName({ row }: { row: InspectionItemResult }) {
       <p><strong>维修评估建议：</strong>{{ report.suggestion }}</p>
       <p><strong>报告生成时间：</strong>{{ report.createdAt }}</p>
     </div>
+
+    <ImagePreview
+      v-if="previewVisible"
+      :images="previewImages"
+      :initial-index="previewIndex"
+      @close="previewVisible = false"
+    />
   </div>
 </template>
+
+<style scoped>
+.report-remark-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.report-remark-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.report-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 4px;
+  object-fit: cover;
+  cursor: pointer;
+  border: 1px solid #dcdfe6;
+  transition: border-color 0.2s;
+}
+.report-thumb:hover {
+  border-color: #409eff;
+}
+</style>

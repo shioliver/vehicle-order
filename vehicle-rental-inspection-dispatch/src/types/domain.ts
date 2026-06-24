@@ -64,11 +64,20 @@ export interface VehicleAttachment {
   uploadedAt: string;
 }
 
+export interface InspectionImage {
+  id: string;
+  name: string;
+  dataUrl: string;
+  size: number;
+  uploadedAt: string;
+}
+
 export interface InspectionItemResult {
   category: string;
   item: string;
   result: '正常' | '异常' | '不适用';
   remark: string;
+  images?: InspectionImage[];
 }
 
 export interface InspectionReport {
