@@ -9,8 +9,26 @@ export default defineConfig(({ mode }) => {
     plugins: [vue()],
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url))
+        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        // AWS SDK 在浏览器中使用，把 Node 内置模块替换为浏览器可用的 polyfill
+        'util': 'util/',
+        'stream': 'stream-browserify',
+        'buffer': 'buffer/',
+        'events': 'events/',
+        'crypto': 'crypto-browserify',
       }
+    },
+    define: {
+      global: 'globalThis',
+      'process.env': '{}',
+    },
+    optimizeDeps: {
+      include: [
+        '@aws-sdk/client-s3',
+        '@aws-sdk/lib-storage',
+        '@aws-sdk/s3-request-presigner',
+        '@aws-sdk/credential-provider-cognito-identity',
+      ],
     },
     server: {
       port: 5173,

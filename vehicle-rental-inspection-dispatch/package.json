@@ -22,8 +22,13 @@
     "@capacitor/cli": "^7.2.0",
     "@capacitor/core": "^7.2.0",
     "@element-plus/icons-vue": "^2.3.1",
+    "buffer": "^6.0.3",
+    "crypto-browserify": "^3.12.1",
     "element-plus": "^2.9.8",
+    "events": "^3.3.0",
     "pinia": "^3.0.2",
+    "stream-browserify": "^3.0.0",
+    "util": "^0.12.5",
     "vue": "^3.5.13",
     "vue-router": "^4.5.0"
   },
